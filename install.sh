@@ -4,9 +4,10 @@
 set -euo pipefail
 command -v jq >/dev/null || { echo "jq required: brew install jq (macOS) / apt install jq (Linux)"; exit 1; }
 
+HOOK_CMD="$HOME/.claude/hooks/session-project-reminder.sh"
 mkdir -p "$HOME/.claude/hooks"
-cp "$(dirname "$0")/hooks/session-project-reminder.sh" "$HOME/.claude/hooks/"
-chmod +x "$HOME/.claude/hooks/session-project-reminder.sh"
+cp "$(dirname "$0")/hooks/session-project-reminder.sh" "$HOOK_CMD"
+chmod +x "$HOOK_CMD"
 
 S="$HOME/.claude/settings.json"
 # -s (non-empty), not -f: a zero-byte settings.json must be seeded too,
@@ -17,8 +18,6 @@ S="$HOME/.claude/settings.json"
 # or multi-document file would be silently mangled otherwise.
 jq -e 'type == "object"' "$S" >/dev/null 2>&1 \
   || { echo "error: $S is not a single JSON object — fix it, then re-run" >&2; exit 1; }
-
-HOOK_CMD="$HOME/.claude/hooks/session-project-reminder.sh"
 # Dedupe on the basename, not the exact string: an existing entry spelled
 # "~/.claude/hooks/..." (as older docs showed) must count as already wired,
 # or the hook fires twice per session.
