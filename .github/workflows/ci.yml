@@ -1,0 +1,35 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  sanitize:
+    name: no personal data or absolute paths
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Generic scan: absolute /Users/ or /home/ paths, emails, and
+      # token-shaped strings have no business in this repo. (Names/URLs are
+      # deliberately NOT listed here — a public workflow file must not
+      # itself disclose what it is guarding against.)
+      - name: scan tracked files
+        run: |
+          set -euo pipefail
+          PATTERN='(/Users/[a-z0-9_-]+|/home/[a-z0-9_-]+|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|xox[bpars]-[A-Za-z0-9-]{10,}|eyJ[A-Za-z0-9_-]{20,})'
+          if git grep -nIiE "$PATTERN" -- ':!.github/workflows/ci.yml'; then
+            echo "::error::personal data, absolute home paths, or token-shaped strings found"
+            exit 1
+          fi
+          echo "clean"
+
+  smoke:
+    name: install.sh + hook smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install jq
+        run: sudo apt-get update -q && sudo apt-get install -y jq
+      - name: run smoke tests
+        run: bash test/smoke.sh

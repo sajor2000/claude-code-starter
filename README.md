@@ -14,10 +14,14 @@ A tiny, opinionated starter kit for a saner Claude Code (+ Codex) setup.
 ## Install
 ```sh
 git clone https://github.com/sajor2000/claude-code-starter && cd claude-code-starter
-./install.sh   # needs jq (brew install jq)
+./install.sh   # needs jq (brew install jq on macOS, apt install jq on Linux)
 ```
 Then copy `templates/AGENTS.md` + `templates/CLAUDE.md` into any repo where
 you run coding agents.
+
+The installer merges into any existing `~/.claude/settings.json` without
+clobbering your config, is idempotent, and refuses to touch a file that
+isn't valid JSON. `test/smoke.sh` covers all of that and runs in CI.
 
 ## Principles this encodes
 1. **One projects root** (e.g. `~/Projects/<repo>`) — always launch agents
